@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+     <!--Import Google Icon Font-->
+      <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+      
+      <!--Import materialize.css-->
+    <!-- Compiled and minified CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+     <!-- Compiled and minified JavaScript -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <!---stylesheet--->
+    <link rel="stylesheet" href="css/styles.css"/>
+    
+    <title>Story Submission Tracker</title>
+</head>
+<body class="blue-grey lighten-5">
+    
+    <header class ="white">
+        
+        <div class="nav-wrapper container">
+        <a href="index.html" class=" logo-header">
+        <img src="/images/logo/typewriter.png" class="logo-img">
+        <strong class=" brand-name  blue-text accent-4">Story Submission Tracker</strong>
+        </a>
+    </header>
+<nav class="light-blue darken-4">
+<!--- Mobile Navigation Trigger -->
+<a href="#" data-target="mobile-menu" class="sidenav-trigger right"aria-label="Open navigation menu"><i class="material-icons black-text">menu</i></a>
+<ul class="  valign-wrapper hide-on-med-and-down">
+  <li><a href="index.html" class="light-blue darken-4 text-darken-4 waves-effect">Home</a>
+  </li>
+  <li><a href="/pages/contests.html" class="light-blue darken-4 text-darken-4 waves-effect">Contests</a>
+  </li>
+  <li><a href="/pages/magazines.html" class="light-blue darken-4 text-darken-4 waves-effect">Magazines</a>
+  </li>
+  <li><a href="/pages/publishers.html" class="light-blue darken-4 text-darken-4 waves-effect">Publishers</a>
+  </li>
+  <li><a href="pages/stories.html" class="light-blue darken-4 text-darken-4 waves-effect">Stories</a>
+  </li>
+  <li><a href="pages/about.html" class="light-blue darken-4 text-darken-4 waves-effect">About</a>
+  </li>
+  <li><a href="pages/contact.html" class="light-blue darken-4 text-darken-4 waves-effect">Contact</a>
+  </li>
+</ul>
+    </div>
+</nav>
+
+<!-- Mobile Side Nav--> 
+ <ul class="sidenav" id="mobile-menu">
+  <li>
+<div class="user-view light-blue darken-4">
+  <span class="white-text name">Story Submission Tracker</span>
+    </div>
+ </li>
+
+<li>
+  <a href="index.html"><i class="material-icons">home</i>Home</a>
+</li>
+<li>
+  <a href="pages/stories.html"><i class="material-icons">star</i>Stories</a>
+</li>
+<li>
+  <a href="pages/contests.html"><i class="material-icons">star</i>Contests</a>
+</li>
+<li>
+  <a href="pages/magazines.html"><i class="material-icons">menu_book</i>Magazines</a>
+</li>
+<li>
+  <a href="pages/publishers.html"><i class="material-icons">book_4</i>Publishers</a>
+</li>
+  <li>
+    <a href="pages/about.html"><i class="material-icons">info_outline</i>About</a>
+  </li>
+  <li><a href="pages/contact.html"><i class="material-icons">mail_outline</i>Contact</a>
+  </li>
+</ul>
+    <main>
+      
+        <section class="container section ">
+    
+
+<!---Dashboard--->
+<div class="row ">
+                <div class ="col s12">
+                    <h5 class= "black-text center-align"><span><i class="material-icons">dashboard</i></span> Tracker Dashboard</h5>
+                </div>
+<!---deadlines-->
+
+<div class ="col s12 m6 l4">
+ <div class="card blue lighten-5">
+    <div class="card-stacked">
+        <div class="card-content">  
+          <span class="black-text">upcoming deadlines</span>
+           <div class="divider black padding-bottom: 3px"></div>
+          
+          <p>1000 words </p>
+          <p>Little Bear </p> 
+          <p>Think like Virginia wolf</p> 
+        </div>
+    </div>
+        <div class="s2 m2 right-align">
+          <button class="btn-flat" type="button" aria-label="delete deadline card">
+<i class="material-icons grey-text text-darken-1">delete_outline</i>
+          </button>
+        </div>
+      </div>
+      </div>
+
+      <!---recent submissions-->
+       <div class ="col s12 m6 l4">
+ <div class="card blue lighten-5">
+    <div class="card-stacked">
+        <div class="card-content">
+            <span class="black-text">recent submissions</span>
+            <span class="new badge orange darken-4 white-text"data-badge-caption=" submitted">2</span>
+            <div class="divider black padding-bottom: 3px"></div>
+            <p>Little Bear</p>
+            <p>Little Bear</p>
+            <p>Little Bear</p>
+        </div>
+    </div>
+    <div class="s2 m2 right-align">
+          <button class="btn-flat" type="button" aria-label="delete recent card">
+<i class="material-icons grey-text text-darken-1">delete_outline</i>
+          </button>
+        </div>
+        </div>
+        </div>
+
+   <!---accepted stories-->
+        <div class ="col s12 m6 l4">
+ <div class="card blue lighten-5">
+    <div class="card-stacked">
+        <div class="card-content">
+        <span class="black-text">Accepted stories</span>
+        <span class="new badge green darken-3 white-text "data-badge-caption=" accepted">3</span>
+         <div class="divider black"></div>
+        <p>Little Bear</p>
+        <p>Little Bear</p>
+        <p>Little Bear</p>
+        </div>
+    </div>   
+      <div class="s2 m2 right-align">
+          <button class="btn-flat" type="button" aria-label="delete accepted card">
+<i class="material-icons grey-text text-darken-1">delete_outline</i>
+          </button>
+        </div>
+      </div> 
+      </div>
+
+      
+   <!---Recently added Markets-->
+        <div class ="col s12 m6 l4">
+ <div class="card blue lighten-5">
+    <div class="card-stacked">
+        <div class="card-content">
+        <span class="black-text">New markets</span>
+        <span class="new badge green darken-3 white-text "data-badge-caption="new">3</span>
+         <div class="divider black"></div>
+        <p>Little Bear</p>
+        <p>Little Bear</p>
+        <p>Little Bear</p>
+        </div>
+    </div>   
+      <div class="s2 m2 right-align">
+          <button class="btn-flat" type="button" aria-label="delete accepted card">
+<i class="material-icons grey-text text-darken-1">delete_outline</i>
+          </button>
+        </div>
+      </div> 
+      </div>
+
+
+      <!---rejected stories-->
+        <div class ="col s12 m6 l4">
+ <div class="card blue lighten-5">
+    <div class="card-stacked">
+        <div class="card-content">
+        <span class="black-text">Rejected stories</span>
+        <span class="new badge green darken-3 white-text "data-badge-caption=" rejected">3</span>
+         <div class="divider black"></div>
+        <p>Little Bear</p>
+        <p>Little Bear</p>
+        <p>Little Bear</p>
+        </div>
+    </div>   
+      <div class="s2 m2 right-align">
+          <button class="btn-flat" type="button" aria-label="delete accepted card">
+<i class="material-icons grey-text text-darken-1">delete_outline</i>
+          </button>
+        </div>
+      </div> 
+      </div>
+        <!---add a tracker-->
+        <div class ="col s12 m6 l4">
+ <div class="center-align section">
+   
+        
+        <button class="btn-floating btn-large black waves-effect waves-light sidenav-trigger"
+       type="button" 
+       data-target="tracker-form" 
+       aria-label="Add a tracker">
+        <i class="material-icons">add</i>
+
+      </button>
+      <p class="light-blue-text text-darken-4">Add Tracker</p>
+    </div>   
+      
+      </div> 
+      </div>
+       
+     </div>   
+
+            <!--popout mobile forms--> <!
+            <span><div class=" center-align section">
+        
+
+<!--Add a Market Button-->
+      <button class="btn black darken-3 waves-effect waves-light sidenav-trigger"
+       type="button" 
+       data-target="market-form" 
+       aria-label="Add a new market">Add a Market
+        <i class="material-icons right">add</i>
+        
+
+      </button>
+      
+     
+
+</span>
+<span>
+<!--Add a story Button-->
+
+<button class="btn black darken-3 waves-effect waves-light sidenav-trigger" 
+data-target="story-form" 
+aria-label="Add a new story"
+type="button">Add a story
+  <i class="material-icons right">add</i>
+      </button>
+    </div>
+  </span>
+</section>
+        
+    </main>
+
+<!---Market submission form-->
+<div class="sidenav" id="market-form">
+  <form class="container section" id="add-market-form">
+<h5 class="light-blue-text text-darken-4">Add New Market</h5>
+<p class="black-text">Fill the form below to add a new market.
+</p>
+  <div class="divider"></div>
+    <!--Title-->
+    <div class="input-field">
+      <i class="material-icons prefix">title</i>
+      <input type="text" id="title" class="validate">
+      <label for="title">Market</label>
+    </div>
+<!--Category-->
+ <div class="input-field">
+  <i class="material-icons prefix">category</i>
+  <select id="market">
+  <option value="" disabled selected>Choose a market</option> 
+  <option value="contest" class="light-blue-text">Contest</option>
+  <option value="magazine">Magazine</option>
+  <option value="publisher">Publisher</option>
+   </select>
+   <label for="market">Market</label>
+ </div>
+ <!---Contact details--->
+ <div class="input-field">
+  <i class="material-icons prefix">web</i>
+  <input type="text" id="website">
+  <label for="website">Website</label>
+ </div>
+ <div class="input-field">
+  <i class="material-icons prefix">email</i>
+  <input type="text" id="email">
+  <label for="email">Email</label>
+ </div>
+
+ <div class="input-field">
+  <i class="material-icons prefix">place</i>
+  <input type="text" id="address">
+  <label for="address">Address</label>
+ </div>
+<!--Description-->
+<div class="input-field">
+   <i class="material-icons prefix">notes</i>
+   <textarea id="description" class="materialize-textarea validate" required></textarea>
+   <label for="description">Market Description</label>
+</div>
+<!--Submit-->
+    <div class=" center-align section">
+          
+<button class="btn black darken-3 waves-effect waves-light" type="submit">Add a market
+  <i class="material-icons right"> add </i>
+</button>
+</div>
+</form>
+</div>
+
+
+<!---Add a story form-->
+<div class="sidenav" id="story-form">
+  <form class="container section" id="add-story-form">
+<h5 class="light-blue-text text-darken-4">Add New Story</h5>
+<p class="black-text">Fill the form below to add a new story.
+</p>
+  <div class="divider"></div>
+    <!--Title-->
+    <div class="input-field">
+      <i class="material-icons prefix">title</i>
+      <input type="text" id="title" class="validate">
+      <label for="title">New Title</label>
+    </div>
+<!--Category-->
+ <div class="input-field">
+  <i class="material-icons prefix">category</i>
+  <select id="story">
+  <option value="" disabled selected>Choose a story type</option> 
+  <option value="novel">Novel</option>
+  <option value="Novela">Novela</option>
+  <option value="shortstory">Short Story</option>
+   <option value="flash">Flash</option>
+   </select>
+  
+ </div>
+ <!--Genre-->
+ <div class="input-field">
+  <i class="material-icons prefix">topic</i>
+  <select id="genre">
+  <option value="" disabled selected>Choose a genre</option> 
+  <option value="novel">Romance</option>
+  <option value="womensfict">Women's Fiction</option>
+  <option value="contemporary">Contemporary Fiction</option>
+  <option value="sciencefict">Science Fiction</option>
+  <option value="thriller">Thriller</option>
+  <option value="historical">Historical Fiction</option>
+  <option value="literary">Literary Fiction</option>
+  <option value="fantasy">Fantasy</option>
+  <option value="mystery">Mystery</option>
+  <option value="adventure">Adventure</option>
+  <option value="supernatural">Supernatural Fiction</option>
+  <option value="horror">Horror</option>
+    
+   </select>
+   
+ </div>
+ <!---Word count--->
+ <div class="input-field">
+  <i class="material-icons prefix">calculate</i>
+  <input type="text" id="wordcount">
+  <label for="wordcount">Word Count</label>
+ </div>
+ 
+<!--Description-->
+<div class="input-field">
+   <i class="material-icons prefix">notes</i>
+   <textarea id="description" class="materialize-textarea validate" required></textarea>
+   <label for="summary">Write a summary</label>
+</div>
+<!--Submit-->
+    <div class=" center-align section">
+          
+<button class="btn black darken-3 waves-effect waves-light" type="submit">Add a story
+  <i class="material-icons right"> add </i>
+</button>
+</div>
+</form>
+</div>
+
+
+
+<!---Add a story form-->
+<div class="sidenav" id="tracker-form">
+  <form class="container section" id="add-tracker-form">
+<h5 class="light-blue-text text-darken-4">Add tracking metric</h5>
+<p class="black-text">Pick a tracking metric to add to the dashboard.
+</p>
+  <div class="divider"></div>
+   
+<!--Category-->
+ <div class="input-field">
+  <i class="material-icons prefix">category</i>
+  <select id="tracker">
+  <option value="" disabled selected>Choose a metric</option> 
+  <option value="recentsub">Recent submissions</option>
+  <option value="recentstories">Recently added stories</option>
+  <option value="rejected">Rejected stories</option>
+   <option value="newmarket">New markets</option>
+   <option value="deadlines">Upcoming deadlines</option>
+   </select>
+  
+ </div>
+ 
+<!--Submit-->
+    <div class=" center-align section">
+          
+<button class="btn black darken-3 waves-effect waves-light" type="submit">Add a tracker
+  <i class="material-icons right">add</i>
+</button>
+</div>
+</form>
+</div>
+
+
+
+
+
+
+     <!-- Story Submission Tracker UI JavaScript -->
+  <script src="js/ui.js"></script>
+</body>
+</html>
