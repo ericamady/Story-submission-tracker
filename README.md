@@ -3,7 +3,7 @@ The Story Submission Tracker is a website that helps writers keep track of stori
 
 ## PWA Features
 ### Installable application
-    an icon stored on the users computer will open a standalone window.
+    An icon stored on the users computer will open a standalone window.
 
 ### Manifest
     Determines how the progressive web app will look when installed.
