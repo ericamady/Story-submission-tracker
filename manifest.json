@@ -1,0 +1,49 @@
+{
+    "name":"Story Submission Tracker",
+    "short_name": "Story Tracker",
+    "id":"/",
+    "description": "Keep track of the of stories you submit for publishing",
+    "start_url":"/",
+    "scope":"/",
+    "display":"standalone",
+    "theme_color":"#b0bec5",
+    "background_color":"#01579b",
+    "orientation":"any",
+    "lang":"en-US",
+    "dir":"ltr",
+    "icons":[
+        {
+            "src":"/images/icons/pen.png",
+            "sizes":"80x80",
+            "type":"image/png"
+        },
+
+        {"src":"/images/icons/maskable-icon.png",
+            "sizes":"512x512",
+            "type":"image/png"
+        },
+        {"src":"/images/icons/maskable-icon.png",
+            "sizes":"512x512",
+            "type":"image/png",
+            "purpose":"maskable"
+        }
+    ],
+    "screenshots":[
+        {
+            "src":"/images/screenshots/narrow.png",
+            "sizes":"577x851",
+            "type":"image/png",
+            "form_factor":"narrow",
+            "label":"Story Tracker responsive view"
+
+        },
+        {
+            "src":"/images/screenshots/wide.png",
+            "sizes":"1640x842",
+            "type":"image/png",
+            "form_factor":"wide",
+            "label":"Story Tracker desktop view"
+
+        }
+    ]
+}

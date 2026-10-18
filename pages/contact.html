@@ -21,7 +21,7 @@
         
         <div class="nav-wrapper container">
         <a href="index.html" class=" logo-header">
-        <img src="/images/logo/typewriter.png" class="logo-img">
+        <img src="/images/icons/pen.png" class="logo-img">
         <strong class=" brand-name  blue-text accent-4">Story Submission Tracker</strong>
         
       </a>
@@ -30,7 +30,7 @@
 <!--- Mobile Navigation Trigger -->
 <a href="#" data-target="mobile-menu" class="sidenav-trigger right"aria-label="Open navigation menu"><i class="material-icons black-text">menu</i></a>
 <ul class="  valign-wrapper hide-on-med-and-down">
-  <li><a href="index.html" class="light-blue darken-4 text-darken-4 waves-effect">Home</a>
+  <li><a href="/index.html" class="light-blue darken-4 text-darken-4 waves-effect">Home</a>
   </li>
   <li><a href="contests.html" class="light-blue darken-4 text-darken-4 waves-effect">Contests</a>
   </li>
@@ -77,6 +77,52 @@
   <li><a href="pages/contact.html"><i class="material-icons">mail_outline</i>Contact</a>
   </li>
 </ul>
+
+<!--Form-->
+
+<div class="contact " id="contact-form" style="width:75%; padding-left: 20px;">
+   <div class="row white" style = "padding: 10px;">
+    <div class = class="col s12 m6 offset-m6">
+  <form  id="add-message-form">
+<h5 class="light-blue-text text-darken-4">Contact Us</h5>
+<p class="black-text">Fill the form below to send us a message. We will respond within 48 hours.
+</p>
+  <div class="divider"></div>
+  <div class="row ">
+        <div class="input-field col s6">
+          <input id="first_name" type="text" class="validate">
+          <label for="first_name">First Name</label>
+        </div>
+        <div class="input-field col s6">
+          <input id="last_name" type="text" class="validate">
+          <label for="last_name">Last Name</label>
+        </div>
+      </div>
+   
+<!--Message Area-->
+<div class="input-field" >
+   <i class="material-icons prefix">notes</i>
+   <textarea id="description" class="materialize-textarea validate" required></textarea>
+   <label for="summary">Write a message</label>
+</div>
+ <div class="row">
+        <div class="input-field col s12">
+          <i class="material-icons prefix">email</i>
+          <input id="email" type="email" class="validate">
+          <label for="email">Email</label>
+        </div>
+      </div>
+ 
+<!--Submit-->
+    <div class=" center-align section">
+          
+<button class="btn black darken-3 waves-effect waves-light" type="submit">submit
+  <i class="material-icons right">submit</i>
+</button>
+</div>
+</div>
+</div>
+</form>
 
      <!-- Story Submission Tracker UI JavaScript -->
   <script src="js/ui.js"></script>
