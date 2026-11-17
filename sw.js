@@ -17,17 +17,19 @@ const APP_SHELL = [
 //Install
 self.addEventListener("install",(event)=> {
     event.waitUntil(
-        caches.open(STATIC_CACHE).then((cache)=>
-            cache.addAll(APP_SHELL)),
+        caches.open(STATIC_CACHE).then(async(cache)=>{
+            await cache.addAll(APP_SHELL);
+ })
+        .then(() =>self.skipWaiting())
     );
-});
+})
 
 //Activate
 self.addEventListener("activate",(event)=>{
     event.waitUntil(
         caches.keys().then((keys)=>{
             const oldCaches = keys.filter((key)=>key.startsWith(CACHE_PREFIX)&&
-        !CURRENT_CACHES.includes(key),
+        !CURRENT_CACHES.includes(key)
     );
     return Promise.all(oldCaches.map((key) => caches.delete(key)));
 
@@ -38,12 +40,14 @@ self.addEventListener("activate",(event)=>{
 
 //Helper Functions
 function isApiRequested(url){
-    return (url.origin.self.location.origin && url.pathname.startsWith("/api/"));
+    return (url.origin === self.location.origin && url.pathname.startsWith("/api/"));
 }
 
 function isApprovedExternalAsset(url){
 return [
-    "cdnjs.cloudflare.com", "fonts.googleapis.com", "fonts.gstatic.com"
+    "cdnjs.cloudflare.com", 
+    "fonts.googleapis.com", 
+    "fonts.gstatic.com"
     ].includes(url.hostname);
 }
 
@@ -60,7 +64,9 @@ return url.origin === self.location.origin || isApprovedExternalAsset(url)
 
 async function cacheFirst(request){
 const cached = await caches.match(request);
-if(cached)return cached;
+if(cached){
+    return cached;
+}
 try{
     const response = await fetch(request)
     const url = new URL(request.url);
@@ -87,7 +93,7 @@ try{
 
 //fetch
 self.addEventListener("fetch",(event)=>{
-   const {request}  = event;
+   const request  = event.request;
    if(request.method !== "GET") return;
    const url = new URL(request.url);
    if(isApiRequested(url)){
