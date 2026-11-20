@@ -10,6 +10,9 @@ const APP_SHELL = [
     "/manifest.json",
     "/js/app.js",
     "/js/ui.js",
+    "/js/tracker-service.js",
+    "/js/firebaseConfig.js",
+    "/js/idb-Storage.js",
     "/images/icons/pen.png"
     
 ]; 
@@ -47,7 +50,8 @@ function isApprovedExternalAsset(url){
 return [
     "cdnjs.cloudflare.com", 
     "fonts.googleapis.com", 
-    "fonts.gstatic.com"
+    "fonts.gstatic.com",
+    "www.gstatic.com"
     ].includes(url.hostname);
 }
 
@@ -62,32 +66,55 @@ if (!cacheDestinations.has(request.destination)){
 return url.origin === self.location.origin || isApprovedExternalAsset(url)
 }
 
-async function cacheFirst(request){
-const cached = await caches.match(request);
-if(cached){
-    return cached;
-}
-try{
-    const response = await fetch(request)
-    const url = new URL(request.url);
-    if(shouldRuntimeCache(request.url)&& (response.ok || response.type === "opaque")){
-        const cache = await caches.open(DYNAMIC_CACHE);
-        await cache.put(request, response.clone());
 
-        } 
-        return response;
-    } catch(error){
-        if(request.mode === "navigate"){
-            const offlinePage = await caches.match("/offline.html")
-            if(offlinePage) return offlinePage;
-        }
-        return new Response("Resource unavailable while offline",{
-            status: 504,
-            statusText: "offline",
-        });
+async function cacheFirst(request) {
+
+    const cached = await caches.match(request);
+
+    if (cached) {
+        return cached;
     }
-} 
 
+    try {
+
+        const response = await fetch(request);
+
+        const url = new URL(request.url);
+
+        if (
+            shouldRuntimeCache(request, url) &&
+            (response.ok || response.type === "opaque")
+        ) {
+
+            const cache = await caches.open(DYNAMIC_CACHE);
+
+            await cache.put(request, response.clone());
+        }
+
+        return response;
+
+    } catch (error) {
+
+        console.error("Service worker fetch failed:", request.url, error);
+
+        if (request.mode === "navigate") {
+
+            const offlinePage = await caches.match("/offline.html");
+
+            if (offlinePage) {
+                return offlinePage;
+            }
+        }
+
+        return new Response(
+            "Resource unavailable while offline",
+            {
+                status: 504,
+                statusText: "offline"
+            }
+        );
+    }
+}
 
 
 

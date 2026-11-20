@@ -1,19 +1,26 @@
 
 import { 
-    watchTrackers, 
+    watchTrackers,
     synchronizePendingChanges
-} from "./tracker-service";
+} from "./tracker-service.js";
 
-import { readAllTrackers, replaceTrackers, saveTrackAndQueue, deleteTrackAndQueue } from "./idb-Storage";
+import { 
+    deleteTrackAndQueue, 
+    saveTrackAndQueue, 
+    readAllTrackers, 
+    mergeServerTrackers
+ } from "./idb-Storage.js";
 
     //service worker registration
     if("serviceWorker" in navigator){
         window.addEventListener("load", async() =>{
             try{
-                const registration = await navigator.serviceWorker.register("./sw.js");
+                const registration = await navigator.serviceWorker.register("/sw.js",
+                    { scope: "/" }
+                );
                 console.log("Story Submission Tracker service worker registered", registration.scope);
             }catch(error){
-                console.error("FieldSync service worker registration failed;", error);
+                console.error("Story Submission Tracker registration failed;", error);
             }
         });
     }
@@ -29,17 +36,27 @@ import { readAllTrackers, replaceTrackers, saveTrackAndQueue, deleteTrackAndQueu
         }
     });
 
-    if(installButton){
-        installButton.addEventListener("click", async()=>{
-            if(!installPrompt) return;
+   if (installButton) {
 
-            const result = await installPrompt.prompt();
-            console.log("Install choice:", result.outcome);
-            
-            installPrompt = null;
-            installButton.hidden = true;
-        });
-    }
+    installButton.addEventListener("click", async () => {
+
+        if (!installPrompt) return;
+
+        const deferredPrompt = installPrompt;
+
+        installPrompt = null;
+
+        await deferredPrompt.prompt();
+
+        const result = await deferredPrompt.userChoice;
+
+        console.log("Install choice:", result.outcome);
+
+        installButton.hidden = true;
+    });
+
+}
+    
 
 window.addEventListener("appinstalled", () => {
   installPrompt = null;
@@ -48,25 +65,28 @@ window.addEventListener("appinstalled", () => {
 });
 
 //connect html and javascript
-const form = document.querySelector("#add-tracker-form");
+const formMarket = document.querySelector("#add-market-form");
+const formStory = document.querySelector("#add-story-form");
+
 const list = document.querySelector("#dash-list");
-const statusMessage = document.querySelector("#tracker-status");
+const statusMessage = document.querySelector("#list-status");
 
 const magazine = document.querySelector("#magazine-list");
 const contest = document.querySelector("#contest-list");
 const publisher = document.querySelector("#publisher-list");
 const story = document.querySelector("#story-list");
-const statusMessagePub = document.querySelector("#publisher-status");
-const statusMessageMag = document.querySelector("#magazine-status");
-const statusMessageCon = document.querySelector("#contest-status");
-const statusMessageStory = document.querySelector("#story-status");
+const recentContainer = document.querySelector("#recent-submissions");
+const wordCount = document.querySelector("#word-count");
 const countBadge = document.querySelector("#tracker-count");
 const formTitle = document.querySelector("#form-title");
 const saveButton = document.querySelector("#save-tracker");
 const cancelEditButton = document.querySelector("#cancel-edit");
 const trackerFormPanel = document.querySelector("#tracker-form");
 
-let editingTrackerId = null;
+const editingTrackerIds = {
+    market: null,
+    story: null
+};
 let currentTrackers = [];
 const dataSource = document.querySelector("#data-source");
 let serverSnapshotRecieved = false;
@@ -77,10 +97,16 @@ function showDataSource(message){
     if(dataSource) dataSource.textContent = message;
 }
 
-function cancelEditOnline(){
-    if(navigator.onLine) return true;
-    showToast("connect to the internet to add, edit , or delete trackers");
-    return false;
+function cancelEditOnline(id) {
+    for (const form of forms) {
+        const type = getFormType(form);
+
+        if (editingTrackerIds[type] === id) {
+            resetFormToCreateMode(form);
+        }
+    }
+
+    return true;
 }
 function toLocalTracker(item){
     
@@ -91,8 +117,8 @@ function toLocalTracker(item){
         genre: item.genre || "",
         website: item.website || "",
         email: item.email || "",
-        location: item.location || "",
-        count: item.count || "",
+        address: item.address || "",
+        wordCount: item.wordCount || "",
         notes: item.notes || "",
         status: item.status || "active",
 
@@ -115,7 +141,7 @@ function showToast(message){
         console.log(message);
       }
     }
-function escapeHtml(value = ""){
+function escapeHTML(value = ""){
         return String(value)
         .replaceAll("&", "&amp;")
         .replaceAll("<", "&lt;")
@@ -158,208 +184,204 @@ function formatTimestamp(timestamp) {
     });
 }
 
-//create page to display form data on dashboard
-statusMessage.hidden= true;
 
-/*trackers.forEach((item)=>{
-        dash.insertAdjacentHTML("beforeend",
-      `
-        <article class="card-panel blue lighten-5 tracker-card">
-          <div class="row valign-wrapper no-margin-bottom">
-            <div class="col s3 m2 center-align">
-              <i class="material-icons medium ${category.iconClass}">${category.icon}</i>
-            </div>
-
-            <div class="col s7 m8">
-              <h5 class="black-text">${escapeHtml(item.title)}</h5>
-              <p class="grey-text text-darken-1">${escapeHtml(item.notes || "")}</p>
-              <p class="grey-text">
-                <i class="material-icons tiny">place</i>
-                ${escapeHtml(item.location || "No location")} &nbsp; | &nbsp;
-                ${escapeHtml(formatTimestamp(item.createdAtMs))}
-              </p>
-            </div>
-
-            <div class="col s2 m2 right-align">
-              <button
-                class="btn-flat edit-btn"
-                type="button"
-                data-id="${item.id}"
-                aria-label="Edit ${escapeHtml(item.title)} tracker"
-              >
-                <i class="material-icons blue-text text-darken-1">edit</i>
-              </button>
-
-              <button
-                class="btn-flat delete-btn"
-                type="button"
-                data-id="${item.id}"
-                aria-label="Delete ${escapeHtml(item.title)} tracker"
-              >
-                <i class="material-icons grey-text text-darken-1">delete_outline</i>
-              </button>
-            </div>
-          </div>
-        </article>
-      `,
-    );
-  });
-}
-*/
 
 // form results for individual pages
 
+
+
+
 function renderTrackers(trackers) {
-    
+    currentTrackers = trackers || [];
 
-    currentTrackers = trackers;
+    Object.entries(trackerSections).forEach(
+        ([sectionKey, section]) => {
 
-    if (!list || !statusMessage) return;
+            const { list, status, count, label } = section;
 
-    list.innerHTML = "";
+            // Count only submissions belonging to this category
+            const filteredTrackers = currentTrackers
+                .filter(item => item.category === sectionKey)
+                .sort((a, b) =>
+                    (b.createdAtMs || 0) - (a.createdAtMs || 0)
+                );
 
-    if (countBadge) {
-        countBadge.textContent = trackers.length;
-    }
+            // Update category-specific count
+            if (count) {
+                count.textContent = filteredTrackers.length;
+            }
 
-    if (trackers.length === 0) {
-        statusMessage.textContent =
-            "No trackers yet. Add your first tracker.";
+            if (!list) return;
 
-        statusMessage.hidden = false;
-        return;
-    }
+            list.innerHTML = "";
 
-    statusMessage.hidden = true;
+            if (filteredTrackers.length === 0) {
+                const emptyMessage = document.createElement("p");
 
-    trackers.forEach((item) => {
+                emptyMessage.textContent =
+                    `No ${label.toLowerCase()} submissions yet. Add your first submission.`;
 
-        const category = categoryDetails(item.category);
+                list.appendChild(emptyMessage);
+                return;
+            }
 
-        const li = document.createElement("li");
+            if (status) status.hidden = true;
 
-        li.className = "collection-item tracker-item";
+            filteredTrackers.forEach(item => {
+                const li = document.createElement("li");
 
-        li.innerHTML = `
-            <div class="row valign-wrapper no-margin-bottom">
+                li.className = "collection-item tracker-item";
 
-                <div class="col s2 center-align">
-                    <i class="material-icons medium ${category.iconClass}">
-                        ${category.icon}
-                    </i>
-                </div>
+                li.innerHTML = `
+                    <div class="row valign-wrapper no-margin-bottom">
+                        <div class="col s8">
+                            <h6 class="black-text">
+                                ${escapeHTML(item.title)}
+                            </h6>
+                            <p class="grey-text text-darken-1">
+                                ${escapeHTML(item.email || "")}
+                            </p>
+                            <p class="grey-text text-darken-1">
+                                ${escapeHTML(item.website || "")}
+                            </p>
+                            <p class="grey-text text-darken-1">
+                                ${escapeHTML(item.notes || "No description")}
+                            </p>
+                            <small class="grey-text">
+                                ${escapeHTML(item.address || "No address")}
+                            </small>
+                            <br>
+                            <small class="grey-text">
+                                Submitted:
+                                ${escapeHTML(formatTimestamp(item.createdAtMs))}
+                            </small>
+                        </div>
 
-                <div class="col s8">
+                        <div class="col s4 right-align">
+                            <button
+                                class="btn-flat edit-btn"
+                                type="button"
+                                data-id="${escapeHTML(item.id)}"
+                                aria-label="Edit tracker">
+                                <i class="material-icons blue-text">edit</i>
+                            </button>
 
-                    <span class="${category.labelClass}">
-                        <strong>${category.label}</strong>
-                    </span>
+                            <button
+                                class="btn-flat delete-btn"
+                                type="button"
+                                data-id="${escapeHTML(item.id)}"
+                                aria-label="Delete tracker">
+                                <i class="material-icons red-text">delete</i>
+                            </button>
+                        </div>
+                    </div>
+                `;
 
-                    <h6 class="black-text">
-                        ${escapeHtml(item.title)}
-                    </h6>
+                list.appendChild(li);
+            });
+        }
+    );
 
-                    <p class="grey-text text-darken-1">
-                        ${escapeHtml(item.notes || "No description")}
-                    </p>
-
-                    <small class="grey-text">
-                        <i class="material-icons tiny">place</i>
-                        ${escapeHtml(item.location || "No location")}
-                    </small>
-
-                    <br>
-
-                    <small class="grey-text">
-                        Submitted:
-                        ${escapeHtml(formatTimestamp(item.createdAtMs))}
-                    </small>
-
-                </div>
-
-                <div class="col s2 right-align">
-
-                    <button
-                        class="btn-flat edit-btn"
-                        type="button"
-                        data-id="${escapeHtml(item.id)}"
-                        aria-label="Edit tracker"
-                    >
-                        <i class="material-icons blue-text">edit</i>
-                    </button>
-
-                    <button
-                        class="btn-flat delete-btn"
-                        type="button"
-                        data-id="${escapeHtml(item.id)}"
-                        aria-label="Delete tracker"
-                    >
-                        <i class="material-icons red-text">delete</i>
-                    </button>
-
-                </div>
-
-            </div>
-        `;
-
-        list.appendChild(li);
-    });
+    displayRecentSubmissions(
+        document.querySelector("#recent-category")?.value || "story"
+    );
 }
-
-
-
-
-
-//Categories
-
-
-
-
-
-
 
 
 const trackerSections = {
     publisher: {
         list: publisher,
-        status: statusMessagePub,
+        count:document.querySelector("#publisher-count"),
         label: "Publisher"
     },
     magazine: {
         list: magazine,
-        status: statusMessageMag,
+        count:document.querySelector("#magazine-count"),
         label: "Magazine"
     },
     contest: {
         list: contest,
-        status: statusMessageCon,
+        count:document.querySelector("#contest-count"),
         label: "Contest"
     },
     story: {
         list: story,
-        status: statusMessageStory,
+        count:document.querySelector("#story-count"),
         label: "Story"
     }
 };
 
-function resetFormToCreateMode(){
-    editingTrackerId = null;
- 
-    if(!form) return;
+
+function getFormType(form) {
+    return form === formMarket ? "market" : "story";
+}
+
+function resetFormToCreateMode(form) {
+    const type = getFormType(form);
+
+    editingTrackerIds[type] = null;
+
     form.reset();
-    formTitle.textContent = "Add New Tracker.";
-    if(saveButton){
-        saveButton.innerHTML = "Add Tracker <i class = material-icons right>save</i>";
+
+    const title = form.querySelector("#form-title");
+    const save = form.querySelector("#save-tracker");
+    const cancel = form.querySelector("#cancel-edit");
+
+    if (title) title.textContent = "Add New Tracker";
+
+    if (save) {
+        save.innerHTML =
+            'Add Tracker <i class="material-icons right">save</i>';
     }
-    if (cancelEditButton){
-        cancelEditButton.hidden = true;
+
+    if (cancel) cancel.hidden = true;
+
+    if (typeof M !== "undefined") {
+        M.updateTextFields();
     }
-    if(typeof M !=="undefined"){
+}
+
+function startEdit(id, form) {
+    const type = getFormType(form);
+
+    const tracker = currentTrackers.find(
+        item => item.id === id
+    );
+
+    if (!tracker) return;
+
+    editingTrackerIds[type] = id;
+
+    form.querySelector("#title").value = tracker.title || "";
+    form.querySelector("#category").value = tracker.category || "";
+    form.querySelector("#genre").value = tracker.genre || "";
+    form.querySelector("#website").value = tracker.website || "";
+    form.querySelector("#email").value = tracker.email || "";
+    form.querySelector("#address").value = tracker.address || "";
+    form.querySelector("#wordCount").value = tracker.wordCount || "";
+    form.querySelector("#description").value = tracker.notes || "";
+
+    const title = form.querySelector("#form-title");
+    const save = form.querySelector("#save-tracker");
+    const cancel = form.querySelector("#cancel-edit");
+
+    if (title) title.textContent = "Edit Tracker";
+
+    if (save) {
+        save.innerHTML =
+            'Save Changes <i class="material-icons right">save</i>';
+    }
+
+    if (cancel) cancel.hidden = false;
+
+    if (typeof M !== "undefined") {
         M.updateTextFields();
 
         const categorySelect = form.querySelector("#category");
-         if (categorySelect) {
-            const instance = M.FormSelect.getInstance(categorySelect);
+
+        if (categorySelect) {
+            const instance =
+                M.FormSelect.getInstance(categorySelect);
 
             if (instance) instance.destroy();
 
@@ -368,202 +390,329 @@ function resetFormToCreateMode(){
     }
 }
 
-function startEdit(id){
-    if(!cancelEditOnline()) return;
-    const tracker = currentTrackers.find((item)=> item.id === id);
-    if(!tracker ||!form) return;
-    
-    editingTrackerId = id;
+//Connection form
 
-    form.querySelector("#title").value = tracker.title || "";
-    form.querySelector("#category").value = tracker.category || "";
-    form.querySelector("#genre").value = tracker.genre || "";
-    form.querySelector("#website").value = tracker.website || "";
-    form.querySelector("#email").value = tracker.email || "";
-    form.querySelector("#location").value = tracker.location || "";
-    form.querySelector("#count").value = tracker.notes || "";
-    form.querySelector("#description").value = tracker.notes || "";
 
-    formTitle.textContent = "Edit Tracker";
-    saveButton.innerHTML =`Save changes<i class= material-icons right>save</i>`;
-    cancelEditButton.hidden = false;
-    if(typeof M !== "undefined"){
-        M.updateTextFields();
-        M.textareaAutoResize(form.querySelector("#description"));
-        const categorySelect = form.querySelector("#category");
-        const selectInstance = M.FormSelect.getInstance(categorySelect);
 
-        if(selectInstance)selectInstance.destroy();
-        M.FormSelect.init(categorySelect);
+const forms = [formMarket, formStory].filter(Boolean);
 
-        const panel = M.Sidenav.getInstance(trackerFormPanel);
-        if(panel) panel.open();
-    }
-}
 
-if(form){
-    form.addEventListener("submit", async(event) =>{
+forms.forEach(form => {
+
+    form.addEventListener("submit", async event => {
         event.preventDefault();
 
-    const existing = currentTrackers.find((item)=>item.id === editingTrackerId,);
-    const now = Date.now();
-    const tracker = {
-        id: editingTrackerId || makeLocalId(),
-        title:form.querySelector("#title").value.trim(),
-        category:form.querySelector("#category").value.trim(),
-        genre:form.querySelector("#genre").value.trim(),
-        website:form.querySelector("#website").value.trim(),
-        email:form.querySelector("#email").value.trim(), 
-        location:form.querySelector("#location").value.trim(),
-        count:form.querySelector("#count").value.trim(),
-        notes:form.querySelector("#description").value.trim(),
-        status:"active",
-        createdAtMs: existing?.createdAtMs || now,
-        updatedAtMs: now,
-    };
-        try{
-            if(saveButton) saveButton.disabled = true;
+        const type = getFormType(form);
+        const editingId = editingTrackerIds[type];
+
+        const existing = currentTrackers.find(
+            item => item.id === editingId
+        );
+
+        const now = Date.now();
+
+        const tracker = {
+            id: editingId || makeLocalId(),
+
+            title: form.querySelector("#title")?.value.trim() || "",
+            category: form.querySelector("#category")?.value.trim() || "",
+            genre: form.querySelector("#genre")?.value.trim() || "",
+            website: form.querySelector("#website")?.value.trim() || "",
+            email: form.querySelector("#email")?.value.trim() || "",
+            address: form.querySelector("#address")?.value.trim() || "",
+            wordCount: form.querySelector("#wordCount")?.value.trim() || "",
+            notes: form.querySelector("#description")?.value.trim() || "",
+
+            status: existing?.status || "active",
+
+            createdAtMs: existing?.createdAtMs || now,
+            updatedAtMs: now
+        };
+
+        const saveButton = form.querySelector("#save-tracker");
+
+        try {
+            if (saveButton) saveButton.disabled = true;
+
             await saveTrackAndQueue(
                 tracker,
-                editingTrackerId ? "update" : "create",
+                editingId ? "update" : "create"
             );
-             await refreshLocalList();
-             await updateSyncMessage();
-             showToast("Saved on this device. It will sync with Firestore when possible.");
 
-            resetFormToCreateMode();
-
-            if(typeof M !== "undefined"){
-                const panel =  M.Sidenav.getInstance(trackerFormPanel);
-                if(panel) panel.close()
-            }
-        }catch(error){
-            console.error("Could not save tracker.", error);
-
-            showToast("Could not save the tracker. Check Firebase setup and rules.");
-        }finally{
-           if(saveButton) {
-            saveButton.disabled = false;
-        }
-        }
-    });
-}
-
-if(cancelEditButton){
-    cancelEditButton.addEventListener("click", () =>{
-        resetFormToCreateMode();
-    });
-}
-
-    document.addEventListener("click", async(event)=>{
-        const editButton = event.target.closest(".edit-btn");
-        if(editButton){
-            startEdit(editButton.dataset.id);
-            return;
-        }
-        const deleteButton = event.target .closest(".delete-btn");
-        if(!deleteButton) return;
-        if(!cancelEditOnline()) return;
-
-        const id = deleteButton.dataset.id;
-        const tracker = currentTrackers.find((item)=>item.id===id);
-        if(!window.confirm(`Delete ${tracker?.title || "this tracker"}?`)){ 
-            return;
-        }
-        try{
-            deleteButton.disabled = true;
-            await deleteTrackAndQueue(id);
             await refreshLocalList();
-            showToast("Tracker deleted from Firebase.");
+            if (navigator.onLine) {
+            void synchronizePendingChanges();
+            }
             
-        }catch(error){
-            console.error("Could not delete tracker:", error);
-            showToast("Could not delete the tracker.");
-            deleteButton.disabled = false;
+
+            showToast(
+                "Tracker saved on this device. It will sync when online."
+            );
+
+            resetFormToCreateMode(form);
+
+        } catch (error) {
+            console.error("Could not save tracker:", error);
+
+            showToast("Could not save tracker.");
+
+        } finally {
+            if (saveButton) saveButton.disabled = false;
         }
     });
 
+});
 
-async function startApp(){
-    try{
-        renderTrackers(await readAllTrackers());
-        await updateSyncMessage();
-    }catch(error){
-        console.error("Could not open the local database:", error);
-        showDataSource("Local storage could not be opened on this device.");
+//Display forms on dashboard
+
+function displayRecentSubmissions(formType) {
+
+    if (!recentContainer) return;
+
+    const filtered = currentTrackers
+        .filter(item => item.category === formType)
+        .sort((a, b) =>
+            (b.createdAtMs || 0) - (a.createdAtMs || 0)
+        )
+        .slice(0, 5);
+
+    if (filtered.length === 0) {
+        recentContainer.innerHTML = `
+            <li class="collection-item">
+                No recent ${formType} submissions found.
+            </li>
+        `;
+        return;
     }
-    try{
-        watchTrackers(
-            async(remoteTrackers, metadata)=> {
-                try{
-                    const possiblyIncomplete =
-                    metadata.fromCache || metadata.hasPendingWrites;
-                    const merged =await mergeServerObstructions(
-                        remoteTrackers,
-                        possiblyIncomplete,
 
-                    );
-                    renderTrackers(merged);
-                    await updateSyncMessage(
+    recentContainer.innerHTML = filtered.map(item => `
+        <li class="collection-item">
+            <strong>${escapeHTML(item.title)}</strong>
+            <p>${escapeHTML(item.notes || "No description")}</p>
+            <small>
+                Submitted: ${escapeHTML(
+                    formatTimestamp(item.createdAtMs)
+                )}
+            </small>
+        </li>
+    `).join("");
+}
+
+const recentCategory = document.querySelector("#recent-category");
+
+if (recentCategory) {
+    recentCategory.addEventListener("change", () => {
+        displayRecentSubmissions(recentCategory.value);
+    });
+}
+
+async function refreshLocalList() {
+    try {
+        const trackers = await readAllTrackers();
+
+        renderTrackers(trackers);
+
+    } catch (error) {
+        console.error("Could not load trackers:", error);
+        showToast("Could not load saved trackers.");
+    }
+}
+
+forms.forEach(form => {
+    const cancelButton = form.querySelector("#cancel-edit");
+    cancelButton?.addEventListener("click", () => {
+        resetFormToCreateMode(form);
+    });
+});
+
+   
+document.addEventListener("click", async (event) => {
+
+    if (!(event.target instanceof Element)) return;
+    // EDIT BUTTON
+    const editButton = event.target.closest(".edit-btn");
+
+    if (editButton) {
+
+        const tracker = currentTrackers.find(
+            item => item.id === editButton.dataset.id
+        );
+
+        if (!tracker) return;
+
+        const form = [
+            "publisher",
+            "magazine",
+            "contest"
+        ].includes(tracker.category)
+            ? formMarket
+            : formStory;
+
+        if (!form) return;
+
+        startEdit(tracker.id, form);
+
+        return;
+    }
+
+    // DELETE BUTTON
+    const deleteButton = event.target.closest(".delete-btn");
+
+    if (!deleteButton) return;
+
+    const id = deleteButton.dataset.id;
+
+    const tracker = currentTrackers.find(
+        item => item.id === id
+    );
+
+    if (!tracker) {
+        showToast("Tracker could not be found.");
+        return;
+    }
+
+    // Ask for confirmation first.
+    if (!window.confirm(
+        `Delete ${tracker.title || "this tracker"}?`
+    )) {
+        return;
+    }
+
+    // Cancel editing only if this is the tracker
+    // currently being edited.
+    cancelEditOnline(id);
+
+    try {
+
+        deleteButton.disabled = true;
+
+        // Delete locally and queue the operation.
+        await deleteTrackAndQueue(id);
+
+        // Refresh the interface.
+        await refreshLocalList();
+
+            showToast(
+            navigator.onLine
+                ? "Tracker deleted locally. Synchronization started."
+                : "Tracker deleted on this device. It will sync when you're online."
+        );
+
+        // Start synchronization immediately.
+        if (navigator.onLine) {
+            void synchronizePendingChanges();
+        }
+
+    } catch (error) {
+
+        console.error(
+            "Could not delete tracker:",
+            error
+        );
+
+        showToast("Could not delete the tracker.");
+
+        deleteButton.disabled = false;
+    }
+
+});
+
+
+async function showSavedTrackersLocal() {
+
+    try {
+
+        const saved = await readAllTrackers();
+
+        if (!serverSnapshotRecieved) {
+
+            renderTrackers(saved);
+
+            if (!navigator.onLine) {
+
+                showDataSource(
+                    "Offline: showing trackers saved on this device."
+                );
+
+            } else if (saved.length) {
+
+                showDataSource(
+                    "Showing saved trackers from this device."
+                );
+
+            } else {
+
+                showDataSource(
+                    "No trackers saved on this device yet."
+                );
+
+            }
+        }
+
+    } catch (error) {
+
+        console.error(
+            "Could not read IndexedDB:",
+            error
+        );
+
+        showDataSource(
+            "Local storage could not be opened."
+        );
+    }
+}
+
+async function startApp() {
+    await showSavedTrackersLocal();
+
+    try {
+        watchTrackers(
+            async (remoteTrackers, metadata) => {
+                try {
+                    const merged = await mergeServerTrackers(
+                        remoteTrackers.map(toLocalTracker),
                         metadata.fromCache
-                        ?"Showing saved records while Firestore checks for updates."
-                        :"Showing the latest Firestore records and local changes."
                     );
-                }catch(error){
-                    console.error(
-                        "Could not combine local and Firestore records:", error,);
+
+                    renderTrackers(merged);
+
+                    serverSnapshotRecieved = !metadata.fromCache;
+
+                    showDataSource(
+                        metadata.fromCache
+                            ? "Showing saved records while Firestore checks for updates."
+                            : "Showing the latest Firestore records and local changes."
+                    );
+
+                    
+                } catch (error) {
+                    console.error("Could not merge trackers:", error);
                 }
             },
-            (error)=>{
-                console.error("Could not listen to Firestore:", error );
-                void updateSyncMessage(
-                    "Firestore is not available. Your saved records are still on this device.",
+
+            error => {
+                console.error("Could not listen to Firestore:", error);
+
+                showDataSource(
+                    "Firestore unavailable. Showing locally saved trackers."
                 );
-            },
-
+            }
         );
-    }catch(error){
-        console.error("Could not start the Firestore listener:", error);
-    }
-}
-async function showSavedTrackersLocal(){
-    try{
-        const saved = await readAllTrackers();
-        if(!serverSnapshotRecieved){
-            renderTrackers(saved);
-            showDataSource(!navigator.onLine? "Offline: showing trackers saved on this device." 
-            : saved.length ? "showing saved trackers from this device." 
-            : "No trackers saved on this device yet.",
-            );
-        }
-    }catch(err){
-        console.error("Could not read IndexDB", err);
-        showDataSource("Local storage could not be opened");
-    }
-}
-async function connectToFirebase(){
-    if(!navigator.onLine || firebaseListenerStarted || firebaseLoading) return;
-    firebaseLoading = true;
-    try{
-        watchTrackers((trackers, metadata) =>{
-            if(metadata.fromCache || metadata.hasPendingWrites) return;
-            serverSnapshotRecieved = true;
-            const plain =  trackers.map(toLocalTracker);
-            renderTrackers(plain);
-            showDataSource("Showing the latest trackers from firebase.");
-            replaceTrackers(plain).catch((error)=>{
-                console.error("Could not update indexDB:", error);
-            });
-        });
 
-    }catch(err){
-        console.error("Could not load firebase trackers", err);
-        showDataSource("Firebase is unavailable. Showing saved trackers.");
+    } catch (error) {
+        console.error("Could not start Firestore listener:", error);
     }
-    finally {
-    firebaseLoading = false;
-}
+
+    if (navigator.onLine) {
+        void synchronizePendingChanges();
+    }
 }
 
-showSavedTrackersLocal();
+
+
+
+
+
+void startApp();
+
 

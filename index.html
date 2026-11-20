@@ -120,7 +120,17 @@
  <div class="card blue lighten-5">
     <div class="card-stacked">
         <div class="card-content">
+
+
+
             <span class="black-text">recent submissions</span>
+           
+        
+        <!-- Recent submission results list -->
+        <ul id="recent-submissions" class="collection"></ul>
+
+
+        </ul>
             <span class="new badge orange darken-4 white-text"data-badge-caption=" submitted">2</span>
             <div class="divider black padding-bottom: 3px"></div>
             <p>Little Bear</p>
@@ -268,7 +278,7 @@ type="button">Add a story
 <!--Category-->
  <div class="input-field">
   <i class="material-icons prefix">category</i>
-  <select id="market">
+  <select id="category">
   <option value="" disabled selected>Choose a market</option> 
   <option value="contest" class="light-blue-text">Contest</option>
   <option value="magazine">Magazine</option>
@@ -326,7 +336,7 @@ type="button">Add a story
 <!--Category-->
  <div class="input-field">
   <i class="material-icons prefix">category</i>
-  <select id="story">
+  <select id="category">
   <option value="" disabled selected>Choose a story type</option> 
   <option value="novel">Novel</option>
   <option value="Novela">Novela</option>
@@ -359,20 +369,20 @@ type="button">Add a story
  <!---Word count--->
  <div class="input-field">
   <i class="material-icons prefix">calculate</i>
-  <input type="text" id="wordcount">
-  <label for="wordcount">Word Count</label>
+  <input type="text" id="wordCount">
+  <label for="wordCount">Word Count</label>
  </div>
  
 <!--Description-->
 <div class="input-field">
    <i class="material-icons prefix">notes</i>
    <textarea id="description" class="materialize-textarea validate" required></textarea>
-   <label for="summary">Write a summary</label>
+   <label for="description">Write a summary</label>
 </div>
 <!--Submit-->
     <div class=" center-align section">
           
-<button class="btn black darken-3 waves-effect waves-light" type="submit">Add a story
+<button class="btn black darken-3 waves-effect waves-light" type="submit" id="save-tracker">Add a story
   <i class="material-icons right"> add </i>
 </button>
 </div>
@@ -392,7 +402,7 @@ type="button">Add a story
 <!--Category-->
  <div class="input-field">
   <i class="material-icons prefix">category</i>
-  <select id="tracker">
+  <select id="category">
   <option value="" disabled selected>Choose a metric</option> 
   <option value="recentsub">Recent submissions</option>
   <option value="recentstories">Recently added stories</option>
@@ -417,9 +427,9 @@ type="button">Add a story
 
 <!-- Compiled and minified JavaScript -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
-  <script type = "module" src = "js/app.js"></script>
+  <script type = "module" src = "./js/app.js"></script>
 
      <!-- Story Submission Tracker UI JavaScript -->
-  <script src="js/ui.js"></script>
+  <script src="../js/ui.js"></script>
 </body>
 </html>

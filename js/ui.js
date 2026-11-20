@@ -1,64 +1,45 @@
-document.addEventListener('DOMContentLoaded',()=>{
-    //initialize the mobile navigation menu
-    const mobileMenu = document.querySelector('#mobile-menu');
-    M.Sidenav.init(mobileMenu,{
-        edge:'right'
 
+document.addEventListener("DOMContentLoaded", () => {
 
-    });
-    //initialize the market side form
-    const marketForm = document.querySelector('#market-form');
-    M.Sidenav.init(marketForm,{
-        edge:'left'
+    console.log("FieldSync: Updated ui.js loaded");
 
+    // Initialize mobile navigation
+    const mobileMenu = document.querySelector("#mobile-menu");
 
-    });
-    //initialize select market fields
-    const selectFields = document.querySelectorAll('select');
-    M.FormSelect.init(selectFields);
-    const addmarketForm = document.querySelector('#add-market-form');
-    addmarketForm.addEventListener('submit', (event)=>{
-        event.preventDefault()
-        M.toast({
-            html: 'Market form is ready.'
+    if (mobileMenu && typeof M !== "undefined") {
+        M.Sidenav.init(mobileMenu, {
+            edge: "right"
         });
-    })
+    }
 
-     //initialize the story side form
-    const storyForm = document.querySelector('#story-form');
-    M.Sidenav.init(storyForm,{
-        edge:'left'
+    // Initialize available side navigation forms
+    const sidenavSelectors = [
+        "#market-form",
+        "#story-form",
+        "#tracker-form"
+    ];
 
+    sidenavSelectors.forEach(selector => {
 
-    });
-    //initialize select story fields
-    const selectStoryFields = document.querySelectorAll('select');
-    M.FormSelect.init(selectStoryFields);
-    const addStoryForm = document.querySelector('#add-story-form');
-    addStoryForm.addEventListener('submit', (event)=>{
-        event.preventDefault()
-        M.toast({
-            html: 'Story form is ready.'
-        });
-    })
+        const element = document.querySelector(selector);
 
-
-     //initialize the tracker side form
-    const trackerForm = document.querySelector('#tracker-form');
-    M.Sidenav.init(trackerForm,{
-        edge:'left'
-
+        if (element && typeof M !== "undefined") {
+            M.Sidenav.init(element, {
+                edge: "left"
+            });
+        }
 
     });
-    //initialize select story fields
-    const trackerFields = document.querySelectorAll('select');
-    M.FormSelect.init(trackerFields);
-    const trackerFieldForm = document.querySelector('#add-tracker-form');
-    trackerFieldForm.addEventListener('submit', (event)=>{
-        event.preventDefault()
-        M.toast({
-            html: 'Tracker form is ready.'
-        });
-    })
-        
+
+    // Initialize select fields once
+    if (typeof M !== "undefined") {
+
+        const selectFields = document.querySelectorAll("select");
+
+        if (selectFields.length > 0) {
+            M.FormSelect.init(selectFields);
+        }
+
+    }
+
 });
